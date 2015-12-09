@@ -38,12 +38,17 @@ class sqlMerge(object):
 
             cursorA.execute("DROP TABLE IF EXISTS " + tableName);
             cursorA.execute("ALTER TABLE " + newTableName + " RENAME TO " + tableName);
+            self.dbA.commit()
 
             print("\n\nMerge Successful!\n")
 
         except sqlite3.OperationalError:
             print("ERROR!: Merge Failed")
             cursorA.execute("DROP TABLE IF EXISTS " + newTableName);
+
+        finally:
+            self.dbA.close()
+            self.dbB.close()
 
         return
 
