@@ -1,0 +1,62 @@
+import sys, sqlite3
+
+class sqlMerge(object):
+    """Basic python script to merge data of 2 !!!IDENTICAL!!!! SQL tables"""
+
+    def __init__(self, parent=None):
+        super(sqlMerge, self).__init__()
+
+        self.dbA = None
+        self.dbB = None
+        
+
+    def loadTables(self, fileNameA, fileNameB):
+        self.dbA = sqlite3.connect(fileNameA)
+        self.dbB = sqlite3.connect(fileNameB)
+        
+        cursorA = self.dbA.cursor()
+        cursorA.execute("SELECT name FROM sqlite_master WHERE type='table';")
+
+        print("SQL Tables available: \n===================================================")
+        for tableItem in cursorA.fetchall():
+            print("-> " + tableItem[0])
+        print("\n===================================================")
+
+        return input("Table to Merge: ")
+
+    def merge(self, tableName):
+        cursorA = self.dbA.cursor()
+        cursorB = self.dbB.cursor()
+
+        newTableName = tableName + "_new"
+
+        try:
+            cursorA.execute("CREATE TABLE IF NOT EXISTS " + newTableName + " AS SELECT * FROM " + tableName)
+            for row in cursorB.execute("SELECT * FROM " + tableName):
+                print(row)
+                cursorA.execute("INSERT INTO " + newTableName + " VALUES" + str(row) +";")
+
+            cursorA.execute("DROP TABLE IF EXISTS " + tableName);
+            cursorA.execute("ALTER TABLE " + newTableName + " RENAME TO " + tableName);
+
+            print("\n\nMerge Successful!\n")
+
+        except sqlite3.OperationalError:
+            print("ERROR!: Merge Failed")
+            cursorA.execute("DROP TABLE IF EXISTS " + newTableName);
+
+        return
+
+    def main(self):
+        print("Please enter name of db file")
+        fileNameA = input("File Name A:")
+        fileNameB = input("File Name B:")
+
+        tableName = self.loadTables(fileNameA, fileNameB)
+        self.merge(tableName)
+
+        return
+
+if __name__ == '__main__':
+    app = sqlMerge()
+    app.main()
