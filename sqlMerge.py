@@ -8,21 +8,29 @@ class sqlMerge(object):
 
         self.dbA = None
         self.dbB = None
-        
+
 
     def loadTables(self, fileNameA, fileNameB):
         self.dbA = sqlite3.connect(fileNameA)
         self.dbB = sqlite3.connect(fileNameB)
-        
+
         cursorA = self.dbA.cursor()
         cursorA.execute("SELECT name FROM sqlite_master WHERE type='table';")
 
+        table_counter = 0
         print("SQL Tables available: \n===================================================")
         for tableItem in cursorA.fetchall():
-            print("-> " + tableItem[0])
+            current_table = tableItem[0]
+            table_counter += 1
+            print("-> " + current_table)
         print("\n===================================================")
 
-        return input("Table to Merge: ")
+        if table_counter == 1:
+            table_to_merge = current_table
+        else:
+            table_to_merge = input("Table to Merge: ")
+
+        return table_to_merge
 
     def merge(self, tableName):
         cursorA = self.dbA.cursor()
