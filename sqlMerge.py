@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import sys, sqlite3
 
 class sqlMerge(object):
@@ -6,24 +8,23 @@ class sqlMerge(object):
     def __init__(self, parent=None):
         super(sqlMerge, self).__init__()
 
-        self.dbA = None
-        self.dbB = None
+        self.db_a = None
+        self.db_b = None
 
+    def loadTables(self, file_a, file_b):
+        self.db_a = sqlite3.connect(file_a)
+        self.db_a = sqlite3.connect(file_b)
 
-    def loadTables(self, fileNameA, fileNameB):
-        self.dbA = sqlite3.connect(fileNameA)
-        self.dbB = sqlite3.connect(fileNameB)
-
-        cursorA = self.dbA.cursor()
-        cursorA.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        cursor_a = self.db_a.cursor()
+        cursor_a.execute("SELECT name FROM sqlite_master WHERE type='table';")
 
         table_counter = 0
-        print("SQL Tables available: \n===================================================")
-        for tableItem in cursorA.fetchall():
-            current_table = tableItem[0]
+        print("SQL Tables available: \n===================================================\n")
+        for table_item in cursor_a.fetchall():
+            current_table = table_item[0]
             table_counter += 1
             print("-> " + current_table)
-        print("\n===================================================")
+        print("\n===================================================\n")
 
         if table_counter == 1:
             table_to_merge = current_table
@@ -32,41 +33,41 @@ class sqlMerge(object):
 
         return table_to_merge
 
-    def merge(self, tableName):
-        cursorA = self.dbA.cursor()
-        cursorB = self.dbB.cursor()
+    def merge(self, table_name):
+        cursor_a = self.db_a.cursor()
+        cursor_a = self.db_b.cursor()
 
-        newTableName = tableName + "_new"
+        new_table_name = table_name + "_new"
 
         try:
-            cursorA.execute("CREATE TABLE IF NOT EXISTS " + newTableName + " AS SELECT * FROM " + tableName)
-            for row in cursorB.execute("SELECT * FROM " + tableName):
+            cursor_a.execute("CREATE TABLE IF NOT EXISTS " + new_table_name + " AS SELECT * FROM " + table_name)
+            for row in cursor_b.execute("SELECT * FROM " + table_name):
                 print(row)
-                cursorA.execute("INSERT INTO " + newTableName + " VALUES" + str(row) +";")
+                cursor_a.execute("INSERT INTO " + new_table_name + " VALUES" + str(row) +";")
 
-            cursorA.execute("DROP TABLE IF EXISTS " + tableName);
-            cursorA.execute("ALTER TABLE " + newTableName + " RENAME TO " + tableName);
-            self.dbA.commit()
+            cursor_a.execute("DROP TABLE IF EXISTS " + table_name);
+            cursor_a.execute("ALTER TABLE " + new_table_name + " RENAME TO " + table_name);
+            self.db_a.commit()
 
             print("\n\nMerge Successful!\n")
 
         except sqlite3.OperationalError:
             print("ERROR!: Merge Failed")
-            cursorA.execute("DROP TABLE IF EXISTS " + newTableName);
+            cursor_a.execute("DROP TABLE IF EXISTS " + new_table_name);
 
         finally:
-            self.dbA.close()
-            self.dbB.close()
+            self.db_a.close()
+            self.db_b.close()
 
         return
 
     def main(self):
         print("Please enter name of db file")
-        fileNameA = input("File Name A:")
-        fileNameB = input("File Name B:")
+        file_name_a = input("File Name A:")
+        file_name_b = input("File Name B:")
 
-        tableName = self.loadTables(fileNameA, fileNameB)
-        self.merge(tableName)
+        table_name = self.loadTables(file_name_a, file_name_b)
+        self.merge(table_name)
 
         return
 
