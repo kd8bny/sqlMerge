@@ -35,7 +35,7 @@ class sqlMerge(object):
 
     def merge(self, table_name):
         cursor_a = self.db_a.cursor()
-        cursor_a = self.db_b.cursor()
+        cursor_b = self.db_b.cursor()
 
         new_table_name = table_name + "_new"
 
