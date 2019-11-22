@@ -13,7 +13,7 @@ class sqlMerge(object):
 
     def loadTables(self, file_a, file_b):
         self.db_a = sqlite3.connect(file_a)
-        self.db_a = sqlite3.connect(file_b)
+        self.db_b = sqlite3.connect(file_b)
 
         cursor_a = self.db_a.cursor()
         cursor_a.execute("SELECT name FROM sqlite_master WHERE type='table';")
